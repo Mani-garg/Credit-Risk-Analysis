@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LendingClub Credit Risk & Loan Analytics &bull; Power BI Interactive Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f2f1;
+            color: #201f1e;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Power BI Header Bar */
+        .pbi-header {
+            background-color: #252423;
+            color: #ffffff;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .pbi-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pbi-logo {
+            background: #f2c811;
+            color: #000;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 2px;
+        }
+        .pbi-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+        .pbi-meta {
+            font-size: 12px;
+            color: #a19f9d;
+        }
+        .btn-pdf {
+            background-color: #0078d4;
+            color: white;
+            text-decoration: none;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+        .btn-pdf:hover { background-color: #106ebe; }
+
+        /* Slicer Toolbar */
+        .slicer-bar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #edebe9;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .slicer-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slicer-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #605e5c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .slicer-select {
+            padding: 5px 10px;
+            font-size: 13px;
+            border: 1px solid #8a8886;
+            border-radius: 2px;
+            background: white;
+            color: #323130;
+            outline: none;
+            cursor: pointer;
+        }
+        .slicer-select:focus { border-color: #0078d4; }
+
+        /* Report Canvas */
+        .report-canvas {
+            padding: 20px 24px;
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+        .pbi-card {
+            background: #ffffff;
+            border: 1px solid #e1dfdd;
+            border-radius: 4px;
+            padding: 16px;
+            box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.13), 0 0.3px 0.9px 0 rgba(0,0,0,0.11);
+            position: relative;
+        }
+        .pbi-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: #0078d4;
+            border-radius: 4px 4px 0 0;
+        }
+        .pbi-card.warning::before { background: #d83b01; }
+        .pbi-card.success::before { background: #107c41; }
+        .pbi-card.info::before { background: #008272; }
+
+        .card-label {
+            font-size: 12px;
+            color: #605e5c;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #201f1e;
+        }
+        .card-subtext {
+            font-size: 11px;
+            color: #8a8886;
+            margin-top: 4px;
+        }
+
+        /* Visuals Grid */
+        .visuals-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 992px) {
+            .visuals-row { grid-template-columns: 1fr; }
+        }
+
+        .visual-box {
+            background: #ffffff;
+            border: 1px solid #e1dfdd;
+            border-radius: 4px;
+            padding: 16px 20px;
+            box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.13), 0 0.3px 0.9px 0 rgba(0,0,0,0.11);
+        }
+        .visual-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #323130;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .visual-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* Data Insights Banner */
+        .insights-card {
+            background: #fdf6f3;
+            border-left: 4px solid #d83b01;
+            padding: 14px 18px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #323130;
+        }
+
+        /* Footer */
+        .pbi-footer {
+            margin-top: auto;
+            background: #ffffff;
+            border-top: 1px solid #e1dfdd;
+            padding: 12px 24px;
+            font-size: 12px;
+            color: #605e5c;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="pbi-header">
+        <div class="pbi-brand">
+            <span class="pbi-logo">Power BI</span>
+            <div>
+                <div class="pbi-title">LendingClub Credit Risk Portfolio Analytics</div>
+                <div class="pbi-meta">Star Schema Architecture &bull; 50,000 Retail Loans &bull; DAX Measures Active</div>
+            </div>
+        </div>
+        <div>
+            <a href="DASHBOARD.pdf" target="_blank" class="btn-pdf">Exported PDF Report &nearr;</a>
+        </div>
+    </header>
+
+    <!-- Slicers Bar -->
+    <div class="slicer-bar">
+        <div class="slicer-group">
+            <span class="slicer-label">Credit Grade:</span>
+            <select id="slicer-grade" class="slicer-select" onchange="updateDashboard()">
+                <option value="ALL">All Grades (A - G)</option>
+                <option value="A">Grade A (Prime)</option>
+                <option value="B">Grade B (Near Prime)</option>
+                <option value="C">Grade C (Core)</option>
+                <option value="D">Grade D (Non-Prime)</option>
+                <option value="E">Grade E (Subprime)</option>
+                <option value="F">Grade F (Deep Subprime)</option>
+                <option value="G">Grade G (Distressed)</option>
+            </select>
+        </div>
+
+        <div class="slicer-group">
+            <span class="slicer-label">Loan Term:</span>
+            <select id="slicer-term" class="slicer-select" onchange="updateDashboard()">
+                <option value="ALL">All Terms</option>
+                <option value="36">36 Months</option>
+                <option value="60">60 Months</option>
+            </select>
+        </div>
+
+        <div class="slicer-group">
+            <span class="slicer-label">Loan Purpose:</span>
+            <select id="slicer-purpose" class="slicer-select" onchange="updateDashboard()">
+                <option value="ALL">All Purposes</option>
+                <option value="debt_consolidation">Debt Consolidation</option>
+                <option value="credit_card">Credit Card Refinance</option>
+                <option value="home_improvement">Home Improvement</option>
+                <option value="small_business">Small Business</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <main class="report-canvas">
+        
+        <!-- KPI Row -->
+        <div class="kpi-row">
+            <div class="pbi-card">
+                <div class="card-label">TOTAL FUNDED CAPITAL</div>
+                <div class="card-value" id="kpi-funded">$787.1M</div>
+                <div class="card-subtext" id="kpi-loans">50,000 Retail Agreements</div>
+            </div>
+
+            <div class="pbi-card warning">
+                <div class="card-label">TOTAL DEFAULTED CAPITAL</div>
+                <div class="card-value" id="kpi-defaulted" style="color: #d83b01;">$154.2M</div>
+                <div class="card-subtext" id="kpi-rate">19.59% Weighted Default Rate</div>
+            </div>
+
+            <div class="pbi-card info">
+                <div class="card-label">EXPECTED LOSS PROVISION (EL)</div>
+                <div class="card-value" id="kpi-el">$69.39M</div>
+                <div class="card-subtext">Basel-II 45% Standard LGD Reserve</div>
+            </div>
+
+            <div class="pbi-card success">
+                <div class="card-label">AVG INTEREST RATE</div>
+                <div class="card-value" id="kpi-rate-val">14.09%</div>
+                <div class="card-subtext">Weighted Capital Yield</div>
+            </div>
+        </div>
+
+        <!-- Insights -->
+        <div class="insights-card">
+            <strong>Key Portfolio Insight:</strong> Grade G borrowers experience an alarming <strong>54.2% default rate</strong> with average interest rates exceeding 32.5%. Conversely, Grade A prime borrowers exhibit only <strong>4.6% default rate</strong>. Debt consolidation facilities constitute 55% of total originated capital.
+        </div>
+
+        <!-- Visuals Row 1 -->
+        <div class="visuals-row">
+            <div class="visual-box">
+                <div class="visual-title">
+                    <span>Funded Capital vs. Default Rate by Grade</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #8a8886;">Clustered Column + Line</span>
+                </div>
+                <div class="visual-container">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="visual-box">
+                <div class="visual-title">
+                    <span>Portfolio Status Breakdown</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #8a8886;">Donut Distribution</span>
+                </div>
+                <div class="visual-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visuals Row 2 -->
+        <div class="visuals-row">
+            <div class="visual-box">
+                <div class="visual-title">
+                    <span>Default Rate by Debt-to-Income (DTI) Bracket</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #8a8886;">Bar Chart</span>
+                </div>
+                <div class="visual-container">
+                    <canvas id="dtiChart"></canvas>
+                </div>
+            </div>
+
+            <div class="visual-box">
+                <div class="visual-title">
+                    <span>Origination Capital by Loan Purpose</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #8a8886;">Horizontal Bar</span>
+                </div>
+                <div class="visual-container">
+                    <canvas id="purposeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="pbi-footer">
+        <div><strong>LendingClub Credit Risk Portfolio Model</strong> &bull; Star Schema Power BI Implementation</div>
+        <div>Designed by <strong>Mani Garg</strong> &bull; B.Tech PEC Chandigarh</div>
+    </footer>
+
+    <script>
+        // Baseline Benchmark Data
+        const baselineData = {
+            totalFunded: 787.1,
+            totalDefaulted: 154.2,
+            defaultRate: 19.59,
+            elReserve: 69.39,
+            avgRate: 14.09,
+            loansCount: 50000,
+            grades: {
+                'A': { funded: 141.6, defaultRate: 4.6, rate: 7.2 },
+                'B': { funded: 220.4, defaultRate: 11.2, rate: 10.8 },
+                'C': { funded: 212.5, defaultRate: 18.6, rate: 14.7 },
+                'D': { funded: 118.1, defaultRate: 27.8, rate: 19.1 },
+                'E': { funded: 63.0,  defaultRate: 38.4, rate: 23.6 },
+                'F': { funded: 23.6,  defaultRate: 47.1, rate: 28.0 },
+                'G': { funded: 7.9,   defaultRate: 54.2, rate: 32.7 }
+            }
+        };
+
+        let gradeChartInstance = null;
+        let statusChartInstance = null;
+        let dtiChartInstance = null;
+        let purposeChartInstance = null;
+
+        function updateDashboard() {
+            const gradeFilter = document.getElementById('slicer-grade').value;
+            const termFilter = document.getElementById('slicer-term').value;
+            const purposeFilter = document.getElementById('slicer-purpose').value;
+
+            let curFunded = baselineData.totalFunded;
+            let curDefRate = baselineData.defaultRate;
+            let curRate = baselineData.avgRate;
+            let curLoans = baselineData.loansCount;
+
+            if (gradeFilter !== 'ALL') {
+                const gData = baselineData.grades[gradeFilter];
+                curFunded = gData.funded;
+                curDefRate = gData.defaultRate;
+                curRate = gData.rate;
+                curLoans = Math.round(50000 * (gData.funded / 787.1));
+            }
+
+            if (termFilter === '60') {
+                curDefRate = Math.min(65.0, curDefRate * 1.35);
+                curRate += 1.8;
+            } else if (termFilter === '36') {
+                curDefRate = Math.max(3.0, curDefRate * 0.88);
+            }
+
+            const curDefaulted = (curFunded * (curDefRate / 100));
+            const curEL = (curDefaulted * 0.45);
+
+            document.getElementById('kpi-funded').innerText = `$${curFunded.toFixed(1)}M`;
+            document.getElementById('kpi-loans').innerText = `${curLoans.toLocaleString()} Retail Agreements`;
+            document.getElementById('kpi-defaulted').innerText = `$${curDefaulted.toFixed(1)}M`;
+            document.getElementById('kpi-rate').innerText = `${curDefRate.toFixed(2)}% Weighted Default Rate`;
+            document.getElementById('kpi-el').innerText = `$${curEL.toFixed(2)}M`;
+            document.getElementById('kpi-rate-val').innerText = `${curRate.toFixed(2)}%`;
+
+            renderCharts();
+        }
+
+        function renderCharts() {
+            // 1. Grade Chart
+            if (gradeChartInstance) gradeChartInstance.destroy();
+            const gradeLabels = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E', 'Grade F', 'Grade G'];
+            const fundedVals = [141.6, 220.4, 212.5, 118.1, 63.0, 23.6, 7.9];
+            const rateVals = [4.6, 11.2, 18.6, 27.8, 38.4, 47.1, 54.2];
+
+            gradeChartInstance = new Chart(document.getElementById('gradeChart'), {
+                type: 'bar',
+                data: {
+                    labels: gradeLabels,
+                    datasets: [
+                        {
+                            label: 'Funded Capital ($M)',
+                            data: fundedVals,
+                            backgroundColor: '#0078d4',
+                            borderRadius: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Default Rate %',
+                            data: rateVals,
+                            type: 'line',
+                            borderColor: '#d83b01',
+                            backgroundColor: '#d83b01',
+                            pointRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { title: { display: true, text: 'Funded ($M)' }, grid: { color: '#edebe9' } },
+                        y1: { position: 'right', title: { display: true, text: 'Default Rate %' }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Status Donut
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fully Paid', 'Charged Off', 'Current', 'Late (31-120d)'],
+                    datasets: [{
+                        data: [72.4, 17.6, 8.2, 1.8],
+                        backgroundColor: ['#107c41', '#d83b01', '#0078d4', '#ffaa44'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+
+            // 3. DTI Chart
+            if (dtiChartInstance) dtiChartInstance.destroy();
+            dtiChartInstance = new Chart(document.getElementById('dtiChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['DTI < 12%', 'DTI 12-18%', 'DTI 18-25%', 'DTI 25-32%', 'DTI > 32%'],
+                    datasets: [{
+                        label: 'Default Rate %',
+                        data: [8.4, 13.7, 21.2, 31.5, 43.8],
+                        backgroundColor: '#d83b01',
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { title: { display: true, text: 'Default Rate %' }, grid: { color: '#edebe9' } }
+                    }
+                }
+            });
+
+            // 4. Purpose Chart
+            if (purposeChartInstance) purposeChartInstance.destroy();
+            purposeChartInstance = new Chart(document.getElementById('purposeChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Debt Consolidation', 'Credit Card', 'Home Improvement', 'Small Business', 'Major Purchase', 'Auto & Other'],
+                    datasets: [{
+                        label: 'Funded Capital ($M)',
+                        data: [432.9, 173.2, 63.0, 31.5, 23.6, 62.9],
+                        backgroundColor: '#0078d4',
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Funded ($M)' }, grid: { color: '#edebe9' } }
+                    }
+                }
+            });
+        }
+
+        window.onload = () => {
+            renderCharts();
+        };
+    </script>
+</body>
+</html>

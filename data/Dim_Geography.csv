@@ -1,0 +1,31 @@
+state_code,state_name,region
+CA,California,West
+TX,Texas,South
+NY,New York,Northeast
+FL,Florida,South
+IL,Illinois,Midwest
+PA,Pennsylvania,Northeast
+OH,Ohio,Midwest
+GA,Georgia,South
+NC,North Carolina,South
+MI,Michigan,Midwest
+NJ,New Jersey,Northeast
+VA,Virginia,South
+WA,Washington,West
+AZ,Arizona,West
+MA,Massachusetts,Northeast
+TN,Tennessee,South
+IN,Indiana,Midwest
+MO,Missouri,Midwest
+MD,Maryland,South
+WI,Wisconsin,Midwest
+CO,Colorado,West
+MN,Minnesota,Midwest
+SC,South Carolina,South
+AL,Alabama,South
+LA,Louisiana,South
+KY,Kentucky,South
+OR,Oregon,West
+OK,Oklahoma,South
+CT,Connecticut,Northeast
+UT,Utah,West

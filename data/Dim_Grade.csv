@@ -1,0 +1,36 @@
+grade,sub_grade,credit_tier,risk_level,benchmark_interest_rate
+A,A1,Prime,Low Risk,5.32
+A,A2,Prime,Low Risk,6.11
+A,A3,Prime,Low Risk,6.91
+A,A4,Prime,Low Risk,7.7
+A,A5,Prime,Low Risk,8.49
+B,B1,Near Prime,Moderate Risk,8.9
+B,B2,Near Prime,Moderate Risk,9.85
+B,B3,Near Prime,Moderate Risk,10.79
+B,B4,Near Prime,Moderate Risk,11.74
+B,B5,Near Prime,Moderate Risk,12.69
+C,C1,Core Consumer,Medium Risk,12.99
+C,C2,Core Consumer,Medium Risk,13.81
+C,C3,Core Consumer,Medium Risk,14.64
+C,C4,Core Consumer,Medium Risk,15.46
+C,C5,Core Consumer,Medium Risk,16.29
+D,D1,Non-Prime,High Risk,16.99
+D,D2,Non-Prime,High Risk,17.99
+D,D3,Non-Prime,High Risk,18.99
+D,D4,Non-Prime,High Risk,19.99
+D,D5,Non-Prime,High Risk,20.99
+E,E1,Subprime,Elevated Risk,21.49
+E,E2,Subprime,Elevated Risk,22.49
+E,E3,Subprime,Elevated Risk,23.49
+E,E4,Subprime,Elevated Risk,24.49
+E,E5,Subprime,Elevated Risk,25.49
+F,F1,Deep Subprime,Very High Risk,25.99
+F,F2,Deep Subprime,Very High Risk,26.99
+F,F3,Deep Subprime,Very High Risk,27.99
+F,F4,Deep Subprime,Very High Risk,28.99
+F,F5,Deep Subprime,Very High Risk,29.99
+G,G1,Distressed Speculative,Critical Risk,30.49
+G,G2,Distressed Speculative,Critical Risk,31.61
+G,G3,Distressed Speculative,Critical Risk,32.74
+G,G4,Distressed Speculative,Critical Risk,33.87
+G,G5,Distressed Speculative,Critical Risk,34.99

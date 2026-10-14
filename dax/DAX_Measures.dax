@@ -1,0 +1,162 @@
+// =============================================================================
+// LENDINGCLUB CREDIT RISK & LOAN PERFORMANCE POWER BI DAX MEASURES
+// Developed by: Mani Garg (Power BI & Business Intelligence)
+// Dataset: 50,000 LendingClub Retail Loans ($787.1M Portfolio Exposure)
+// Architecture: Star Schema (Fact_Loans + Dim_Date + Dim_Grade + Dim_Geography + Dim_Purpose)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. PORTFOLIO VOLUME & CAPITAL MEASURES
+// -----------------------------------------------------------------------------
+
+Total Loan Applications = 
+COUNTROWS('Fact_Loans')
+
+Total Funded Amount = 
+SUM('Fact_Loans'[funded_amount])
+
+Average Loan Size = 
+DIVIDE([Total Funded Amount], [Total Loan Applications], 0)
+
+Total Borrower Payments = 
+SUM('Fact_Loans'[total_payment])
+
+Active Portfolio Balance = 
+CALCULATE(
+    SUM('Fact_Loans'[funded_amount]),
+    'Fact_Loans'[loan_status] IN {"Current", "Late (31-120 days)"}
+)
+
+
+// -----------------------------------------------------------------------------
+// 2. CREDIT RISK, DEFAULT & REGULATORY LOSS MEASURES
+// -----------------------------------------------------------------------------
+
+Total Defaulted Amount = 
+CALCULATE(
+    SUM('Fact_Loans'[funded_amount]),
+    'Fact_Loans'[is_default] = 1
+)
+
+Total Defaulted Count = 
+CALCULATE(
+    COUNTROWS('Fact_Loans'),
+    'Fact_Loans'[is_default] = 1
+)
+
+Default Rate % = 
+DIVIDE([Total Defaulted Amount], [Total Funded Amount], 0)
+
+Default Volume Rate % = 
+DIVIDE([Total Defaulted Count], [Total Loan Applications], 0)
+
+Loss Given Default (LGD) Benchmark = 
+0.45 // Basel-II Standard Retail LGD (45%)
+
+Expected Credit Loss (EL) = 
+[Total Defaulted Amount] * [Loss Given Default (LGD) Benchmark]
+
+Total Recoveries = 
+SUM('Fact_Loans'[recoveries])
+
+Net Credit Loss = 
+[Total Defaulted Amount] - [Total Recoveries]
+
+Recovery Rate % = 
+DIVIDE([Total Recoveries], [Total Defaulted Amount], 0)
+
+
+// -----------------------------------------------------------------------------
+// 3. UNDERWRITING & BORROWER PROFILE MEASURES
+// -----------------------------------------------------------------------------
+
+Average Interest Rate = 
+AVERAGE('Fact_Loans'[int_rate]) / 100
+
+Weighted Average Interest Rate = 
+DIVIDE(
+    SUMX('Fact_Loans', 'Fact_Loans'[int_rate] * 'Fact_Loans'[funded_amount]),
+    [Total Funded Amount],
+    0
+) / 100
+
+Average DTI = 
+AVERAGE('Fact_Loans'[dti]) / 100
+
+Weighted Average DTI = 
+DIVIDE(
+    SUMX('Fact_Loans', 'Fact_Loans'[dti] * 'Fact_Loans'[funded_amount]),
+    [Total Funded Amount],
+    0
+) / 100
+
+Average Revolving Utilization = 
+AVERAGE('Fact_Loans'[revol_util]) / 100
+
+Average Annual Income = 
+AVERAGE('Fact_Loans'[annual_income])
+
+
+// -----------------------------------------------------------------------------
+// 4. TIME INTELLIGENCE MEASURES (MoM & YoY)
+// -----------------------------------------------------------------------------
+
+Funded Amount YTD = 
+TOTALYTD([Total Funded Amount], 'Dim_Date'[date])
+
+Funded Amount Prior Year = 
+CALCULATE(
+    [Total Funded Amount],
+    SAMEPERIODLASTYEAR('Dim_Date'[date])
+)
+
+Funded Amount YoY Growth % = 
+DIVIDE(
+    [Total Funded Amount] - [Funded Amount Prior Year],
+    [Funded Amount Prior Year],
+    0
+)
+
+Defaulted Amount Prior Year = 
+CALCULATE(
+    [Total Defaulted Amount],
+    SAMEPERIODLASTYEAR('Dim_Date'[date])
+)
+
+Default Rate MoM Change = 
+VAR CurrentMonthRate = [Default Rate %]
+VAR PriorMonthRate = CALCULATE([Default Rate %], DATEADD('Dim_Date'[date], -1, MONTH))
+RETURN
+IF(
+    ISBLANK(PriorMonthRate),
+    BLANK(),
+    CurrentMonthRate - PriorMonthRate
+)
+
+
+// -----------------------------------------------------------------------------
+// 5. EXECUTIVE SEGMENTATION & RISK CONCENTRATION
+// -----------------------------------------------------------------------------
+
+High Risk Portfolio Exposure (Grades E-G) = 
+CALCULATE(
+    [Total Funded Amount],
+    'Dim_Grade'[grade] IN {"E", "F", "G"}
+)
+
+High Risk Exposure % = 
+DIVIDE([High Risk Portfolio Exposure (Grades E-G)], [Total Funded Amount], 0)
+
+Prime Portfolio Exposure (Grades A-B) = 
+CALCULATE(
+    [Total Funded Amount],
+    'Dim_Grade'[grade] IN {"A", "B"}
+)
+
+Rank State by Loan Volume = 
+RANKX(
+    ALL('Dim_Geography'[state_name]),
+    [Total Funded Amount],
+    ,
+    DESC
+)

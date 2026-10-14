@@ -1,0 +1,11 @@
+purpose_code,purpose_name,category
+debt_consolidation,Debt Consolidation,Refinancing
+credit_card,Credit Card Refinance,Refinancing
+home_improvement,Home Improvement,Property
+major_purchase,Major Purchase,Consumer
+small_business,Small Business Expansion,Commercial
+car,Auto Financing,Consumer
+medical,Medical Expenses,Personal
+moving,Moving & Relocation,Personal
+vacation,Vacation / Travel,Discretionary
+other,Other Personal Needs,Personal
