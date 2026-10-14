@@ -141,6 +141,9 @@ HTML_PAGE = """<!DOCTYPE html>
             <div class="nav-item" onclick="switchNav('underwriter')">
                 <span>Underwriting Sandbox</span>
             </div>
+            <div class="nav-item" onclick="switchNav('powerbi')">
+                <span>Power BI Executive Report</span>
+            </div>
         </div>
 
         <div class="sidebar-footer">
@@ -284,6 +287,33 @@ HTML_PAGE = """<!DOCTYPE html>
                 </div>
             </div>
 
+            <!-- Power BI Executive Report Tab -->
+            <div id="tab-powerbi" class="tab-panel">
+                <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div>
+                            <h3 style="font-size: 18px; font-weight: 700; color: var(--text-heading); margin-bottom: 6px;">Executive LendingClub Power BI Analytics</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); max-width: 800px; line-height: 1.6;">
+                                Direct interactive visualization of the LendingClub portfolio. In enterprise banking architecture, the <strong>Python ML engine calculates mathematical Basel-II PD &amp; Expected Loss ($EL = PD \times LGD \times EAD$)</strong>, which feeds directly into this <strong>Power BI Executive Dashboard</strong> for C-suite risk monitoring, grade segmentation, and loan purpose drill-downs.
+                            </p>
+                        </div>
+                        <a href="/dashboard.pdf" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-heading); padding: 8px 16px; border-radius: var(--radius-sm); text-decoration: none; font-size: 12px; font-weight: 600;">
+                            Open in Fullscreen &nearr;
+                        </a>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 14px; background: var(--bg-canvas); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 12px;">
+                        <div><span style="color: var(--text-muted);">BI Engine:</span> <strong style="color: var(--text-heading);">Microsoft Power BI</strong></div>
+                        <div><span style="color: var(--text-muted);">Report File:</span> <strong style="color: var(--brand-cyan);">DASHBOARD.pdf</strong></div>
+                        <div><span style="color: var(--text-muted);">Data Pipeline:</span> <strong style="color: var(--text-heading);">Python ML &rarr; Power BI Ingestion</strong></div>
+                        <div><span style="color: var(--text-muted);">Focus Areas:</span> <strong style="color: var(--brand-emerald);">Grade G Risks, DTI &amp; Default Rates</strong></div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; height: 850px; box-shadow: var(--shadow-sm);">
+                    <iframe src="/dashboard.pdf" style="width: 100%; height: 100%; border: none;" title="Power BI Executive Report"></iframe>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -297,7 +327,13 @@ HTML_PAGE = """<!DOCTYPE html>
 
             const panel = document.getElementById(`tab-${tabId}`);
             if (panel) panel.classList.add('active');
-            document.getElementById('breadcrumb-title').innerText = tabId === 'portfolio' ? 'Portfolio Capital Metrics' : 'Underwriting Sandbox';
+            
+            const titles = {
+                'portfolio': 'Portfolio Capital Metrics',
+                'underwriter': 'Underwriting Sandbox',
+                'powerbi': 'Power BI Executive Report'
+            };
+            document.getElementById('breadcrumb-title').innerText = titles[tabId] || 'Portfolio Capital Metrics';
         }
 
         async function loadData() {
@@ -473,6 +509,19 @@ class CreditApiHandler(BaseHTTPRequestHandler):
             cols = ['loan_id', 'loan_amnt', 'grade', 'annual_inc', 'dti', 'credit_score', 'pd_score', 'expected_loss', 'underwriting_decision']
             records = portfolio_df[cols].head(25).to_dict(orient="records")
             self._send_json(records)
+
+        elif path == "/dashboard.pdf":
+            pdf_path = os.path.join(current_dir, "DASHBOARD.pdf")
+            if os.path.exists(pdf_path):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/pdf')
+                self.send_header('Content-Disposition', 'inline; filename="Credit_Risk_PowerBI_Dashboard.pdf"')
+                self.end_headers()
+                with open(pdf_path, 'rb') as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(404)
+                self.end_headers()
 
         else:
             self.send_response(404)
